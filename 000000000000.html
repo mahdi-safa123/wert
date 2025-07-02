@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<!-- saved from url=(0060)file:///C:/Users/lenovo/Downloads/index_cut_price_final.html -->
+<html lang="ar"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>نظام النقاط - موقع جديد</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  direction: rtl;
+  padding: 20px;
+  background-color: #121212;
+  color: #ffffff;
+}
+.card {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+input, button {
+  padding: 10px;
+  margin: 5px 0;
+  font-size: 16px;
+  width: 300px;
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+button {
+  margin-left: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+th, td {
+  border: 1px solid #444;
+  padding: 10px;
+  text-align: center;
+}
+th {
+  background-color: #333;
+  color: #fff;
+}
+#notification {
+  background: #1e4620;
+  border: 1px solid #4caf50;
+  color: #b2fab4;
+  font-weight: bold;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+.review-button {
+  background-color: #388e3c;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.review-button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+#auditLogTable td {
+  background-color: #1a1a1a;
+  border: 1px solid #555;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+#auditLogTable td[contenteditable="true"] {
+  background-color: #262626;
+}
+
+</style>
+</head>
+<body>
+  
+<h1 style="text-align:center; font-size:32px; color:#222; margin-bottom:20px;">🪙 شراء نقاط سنتات</h1>
+
+<div class="card" style="text-align:center; background:#222; border:1px solid #4caf50; max-width:400px; margin: 0 auto 20px;">
+  <h2 style="color:#4caf50;">💰 رصيد القاصة</h2>
+  <input type="text" id="safeAmount" value="0" style="width: 300px; font-size: 28px; text-align:center; font-weight:bold;">
+</div>
+
+<h2>🧮 نظام النقاط (معادلة جديدة)</h2>
+
+  <div id="notification"></div>
+
+  <div class="card">
+    👤 اسم المحاسب: <input type="text" id="accountant"><br>
+
+    👥 اسم المستخدم: <input type="text" id="username"><br>
+    🔢 رمز الإحالة: <input type="text" id="ref"><br>
+    💬 عدد النقاط: <input type="text" id="points"><br>
+    <button onclick="calculateAndSave()">احسب السعر وأضف للسجل</button>
+    <button id="reviewBtn" class="review-button" onclick="handleReview()">✔️ تدقيق</button>
+    <div id="result" style="margin-top:10px;font-weight:bold;"></div>
+  </div>
+
+  <div class="card">
+    <h3>📋 السجل</h3>
+    <table id="logTable">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>اسم المستخدم</th>
+          <th>رمز الإحالة</th>
+          <th>النقاط</th>
+          <th>السعر</th>
+          <th>مراجعة</th>
+          <th>حذف</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+<div style="text-align:center; margin-top:10px;">
+  <button onclick="undoLastDeduction()">↩️ تراجع عن آخر خصم</button>
+</div>
+
+  </div>
+
+  <div class="card">
+    <h3>📝 سجل التدقيق</h3>
+    <table id="auditLogTable">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>اسم المستخدم</th>
+          <th>رمز الإحالة</th>
+          <th>النقاط</th>
+          <th>السعر</th>
+          <th>مراجعة</th>
+          <th>اسم المحاسب</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <h4>📊 مجموع نقاط التدقيق: <span id="auditPointsSum">0</span></h4>
+    <h4>💰 مجموع السعر: <span id="auditTotalPrice">0</span> دينار</h4>
+    <div style="text-align:center; margin-top:15px;">
+      <button onclick="printAuditOnly()">🖨️ طباعة سجل التدقيق فقط</button>
+    </div>
+  </div>
+
+    <div style="text-align:center; margin-top:15px;">
+      <button onclick="saveAuditLog()">💾 حفظ سجل التدقيق</button>
+    </div>
+
+
+
+  <div class="card">
+    <h3>📘 سجل حركات القاصة</h3>
+    👤 المحاسب المسؤول: <input type="text" id="safeSource" placeholder="مثلاً: أحمد"><br>
+    💰 مبلغ الإضافة: <input type="text" id="safeAddAmount" placeholder="مثلاً: 100000"><br>
+    <button onclick="addSafeLog()">➕ إضافة رصيد إلى القاصة</button>
+
+    
+<br><hr style="margin: 20px 0; border: 1px dashed #4caf50;">
+<h3>➖ إضافة عملية صادر من القاصة</h3>
+👤 المحاسب المسؤول: <input type="text" id="safeOutSource" placeholder="مثلاً: أحمد"><br>
+💸 مبلغ الصادر: <input type="text" id="safeOutAmount" placeholder="مثلاً: 50000"><br>
+📝 السبب: <input type="text" id="safeOutReason" placeholder="مثلاً: تحويل خارجي"><br>
+<button onclick="addSafeOutLog()">➖ إضافة صادر من القاصة</button>
+
+<table id="safeLogTable" style="margin-top:20px;">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>العملية</th>
+          <th>المبلغ</th>
+          <th>المصدر</th>
+          <th>السبب</th>
+          <th>حذف</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+<div style="text-align:center; margin-top:10px;">
+  <button onclick="undoLastDeduction()">↩️ تراجع عن آخر خصم</button>
+</div>
+
+  </div>
+
+
+<script>
+let reviewUsed = false;
+
+function calculateAndSave() {
+  const username = document.getElementById("username").value;
+  const ref = document.getElementById("ref").value;
+  const accountant = document.getElementById("accountant").value;
+  const pointsInput = document.getElementById("points");
+  const points = parseInt(pointsInput.value.replace(/[^\d]/g, "")) || 0;
+  const resultElem = document.getElementById("result");
+  const notifyElem = document.getElementById("notification");
+  notifyElem.textContent = "";
+
+  if (!points || points <= 0) {
+    resultElem.innerText = "❗ يرجى إدخال عدد نقاط صحيح.";
+    return;
+  }
+
+  const rawPrice = (points / 5000) * 1320;
+  const price = Math.floor(rawPrice / 1000) * 1000;
+  const safeInput = document.getElementById("safeAmount");
+  let safeAmount = parseInt(safeInput.value.replace(/[^\d]/g, "")) || 0;
+
+  if (price > safeAmount) {
+    resultElem.innerText = "❗ لا يوجد رصيد كافٍ في القاصة.";
+    return;
+  }
+
+  
+// استقطاع السعر من القاصة
+  safeAmount -= price;
+  safeInput.value = safeAmount.toLocaleString();
+
+  resultElem.innerText = price.toLocaleString() + " دينار";
+  notifyElem.textContent = "✅ تم احتساب السعر وإضافته إلى السجل بنجاح.";
+
+  const table = document.querySelector("#logTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${new Date().toLocaleString("ar-EG")}</td>
+    <td>${username}</td>
+    <td>${ref}</td>
+    <td>${points.toLocaleString()}</td>
+    <td>${price.toLocaleString()}</td>
+    <td>—</td>
+  `;
+  table.insertBefore(row, table.firstChild);
+  reviewUsed = false;
+  document.getElementById("reviewBtn").disabled = false;
+  pointsInput.value = "";
+}
+
+function handleReview() {
+  if (reviewUsed) return;
+  markReviewed();
+  document.getElementById("reviewBtn").disabled = true;
+  reviewUsed = true;
+}
+
+function markReviewed() {
+  const table = document.querySelector("#logTable tbody");
+  const auditTable = document.querySelector("#auditLogTable tbody");
+  const firstRow = table.rows[0];
+  if (!firstRow) return;
+
+  const cols = Array.from(firstRow.cells).map(td => td.textContent);
+  const accountant = document.getElementById("accountant").value;
+
+  const auditRow = document.createElement("tr");
+  auditRow.innerHTML = `
+    <td contenteditable="true">${new Date().toLocaleString("ar-EG")}</td>
+    <td contenteditable="true">${cols[1]}</td>
+    <td contenteditable="true">${cols[2]}</td>
+    <td contenteditable="true">${cols[3]}</td>
+    <td contenteditable="true">${cols[4]}</td>
+    <td contenteditable="true">✓</td>
+    <td contenteditable="true">${accountant}</td>
+  `;
+  auditTable.insertBefore(auditRow, auditTable.firstChild);
+  updateAuditPointsSum();
+}
+
+function updateAuditPointsSum() {
+  const rows = document.querySelectorAll("#auditLogTable tbody tr");
+  let total = 0;
+  rows.forEach(row => {
+    const pts = row.cells[3]?.textContent?.replace(/[^\d]/g, "") || "0";
+    total += parseInt(pts) || 0;
+  });
+  document.getElementById("auditPointsSum").textContent = total.toLocaleString();
+  
+    let totalPrice = 0;
+    rows.forEach(row => {
+        const price = row.cells[4]?.textContent?.replace(/[^\d]/g, "") || "0";
+        totalPrice += parseInt(price) || 0;
+    });
+    document.getElementById("auditTotalPrice").textContent = totalPrice.toLocaleString();
+    
+}
+
+function printAuditOnly() {
+  const auditTable = document.getElementById("auditLogTable").outerHTML;
+  const w = window.open("", "", "width=800,height=600");
+  w.document.write("<html><head><title>طباعة سجل التدقيق</title></head><body>");
+  w.document.write("<h2>سجل التدقيق</h2>");
+  w.document.write(auditTable);
+  w.document.write("</body></html>");
+  w.document.close();
+  w.print();
+}
+
+document.getElementById("points").addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    calculateAndSave();
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  const active = document.activeElement;
+  if (!active || !active.isContentEditable) return;
+
+  const td = active;
+  const tr = td.parentElement;
+  const rowIndex = tr.rowIndex;
+  const cellIndex = td.cellIndex;
+
+  let target;
+  if (e.key === "ArrowDown") {
+    const nextRow = tr.nextElementSibling;
+    if (nextRow) target = nextRow.cells[cellIndex];
+  } else if (e.key === "ArrowUp") {
+    const prevRow = tr.previousElementSibling;
+    if (prevRow && prevRow.rowIndex > 0) target = prevRow.cells[cellIndex];
+  } else if (e.key === "ArrowLeft") {
+    if (cellIndex > 0) target = tr.cells[cellIndex - 1];
+  } else if (e.key === "ArrowRight") {
+    if (cellIndex < tr.cells.length - 1) target = tr.cells[cellIndex + 1];
+  }
+
+  if (target && target.isContentEditable) {
+    e.preventDefault();
+    target.focus();
+  }
+});
+
+
+const topInputs = Array.from(document.querySelectorAll('#accountant, #username, #ref, #points'));
+
+topInputs.forEach((input, idx) => {
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown' && idx < topInputs.length - 1) {
+      e.preventDefault();
+      topInputs[idx + 1].focus();
+    } else if (e.key === 'ArrowUp' && idx > 0) {
+      e.preventDefault();
+      topInputs[idx - 1].focus();
+    }
+  });
+});
+
+
+// تنسيق إدخال القاصة بالفواصل
+document.addEventListener("DOMContentLoaded", function () {
+  const safeInput = document.getElementById("safeAmount");
+  safeInput.addEventListener("input", function () {
+    let raw = this.value.replace(/[^\d]/g, "");
+    this.value = parseInt(raw || "0").toLocaleString();
+  });
+});
+
+
+function saveAuditLog() {
+  const rows = document.querySelectorAll("#auditLogTable tbody tr");
+  const data = [];
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    data.push({
+      التاريخ: cells[0]?.textContent.trim(),
+      المستخدم: cells[1]?.textContent.trim(),
+      الرمز: cells[2]?.textContent.trim(),
+      النقاط: cells[3]?.textContent.trim(),
+      السعر: cells[4]?.textContent.trim(),
+      مراجعة: cells[5]?.textContent.trim(),
+      المحاسب: cells[6]?.textContent.trim()
+    });
+  });
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "سجل_التدقيق.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+function addSafeLog() {
+  const source = document.getElementById("safeSource").value.trim();
+  const addAmountInput = document.getElementById("safeAddAmount");
+  const amount = parseInt(addAmountInput.value.replace(/[^\d]/g, "")) || 0;
+  if (!amount || amount <= 0 || !source) {
+    alert("يرجى إدخال مصدر صحيح ومبلغ أكبر من صفر.");
+    return;
+  }
+
+  const safeInput = document.getElementById("safeAmount");
+  let safeAmount = parseInt(safeInput.value.replace(/[^\d]/g, "")) || 0;
+  safeAmount += amount;
+  safeInput.value = safeAmount.toLocaleString();
+
+  const table = document.querySelector("#safeLogTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td contenteditable="true">${new Date().toLocaleString("ar-EG")}</td>
+    <td contenteditable="true">إضافة</td>
+    <td contenteditable="true">${amount.toLocaleString()}</td>
+    <td contenteditable="true">${source}</td>
+  `;
+  table.insertBefore(row, table.firstChild);
+
+  addAmountInput.value = "";
+  document.getElementById("safeSource").value = "";
+}
+
+// تعديل دالة خصم القاصة لتسجيل الخصم كمصدر تلقائي
+const originalCalculateAndSave = calculateAndSave;
+calculateAndSave = function() {
+  const username = document.getElementById("username").value;
+  const ref = document.getElementById("ref").value;
+  const accountant = document.getElementById("accountant").value;
+  const pointsInput = document.getElementById("points");
+  const points = parseInt(pointsInput.value.replace(/[^\d]/g, "")) || 0;
+  const resultElem = document.getElementById("result");
+  const notifyElem = document.getElementById("notification");
+  notifyElem.textContent = "";
+
+  if (!points || points <= 0) {
+    resultElem.innerText = "❗ يرجى إدخال عدد نقاط صحيح.";
+    return;
+  }
+
+  const rawPrice = (points / 5000) * 1320;
+  const price = Math.floor(rawPrice / 1000) * 1000;
+  const safeInput = document.getElementById("safeAmount");
+  let safeAmount = parseInt(safeInput.value.replace(/[^\d]/g, "")) || 0;
+
+  if (price > safeAmount) {
+    resultElem.innerText = "❗ لا يوجد رصيد كافٍ في القاصة.";
+    return;
+  }
+
+  // خصم السعر من القاصة
+  safeAmount -= price;
+  safeInput.value = safeAmount.toLocaleString();
+
+  // سجل خصم القاصة تلقائيًا
+  const table = document.querySelector("#safeLogTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td contenteditable="true">${new Date().toLocaleString("ar-EG")}</td>
+    <td contenteditable="true">خصم</td>
+    <td contenteditable="true">${price.toLocaleString()}</td>
+    <td contenteditable="true">${accountant}</td>
+  `;
+  table.insertBefore(row, table.firstChild);
+
+  resultElem.innerText = price.toLocaleString() + " دينار";
+  notifyElem.textContent = "✅ تم احتساب السعر وإضافته إلى السجل بنجاح.";
+
+  const logTable = document.querySelector("#logTable tbody");
+  const logRow = document.createElement("tr");
+  logRow.innerHTML = `
+    <td>${new Date().toLocaleString("ar-EG")}</td>
+    <td>${username}</td>
+    <td>${ref}</td>
+    <td>${points.toLocaleString()}</td>
+    <td>${price.toLocaleString()}</td>
+    <td>—</td>
+  `;
+  logTable.insertBefore(logRow, logTable.firstChild);
+  reviewUsed = false;
+  document.getElementById("reviewBtn").disabled = false;
+  pointsInput.value = "";
+};
+
+
+document.addEventListener("keydown", function(e) {
+  const active = document.activeElement;
+  if (!active || !active.isContentEditable) return;
+
+  const td = active;
+  const tr = td.parentElement;
+  const rowIndex = tr.rowIndex;
+  const cellIndex = td.cellIndex;
+
+  let target;
+  if (e.key === "ArrowDown") {
+    const nextRow = tr.nextElementSibling;
+    if (nextRow) target = nextRow.cells[cellIndex];
+  } else if (e.key === "ArrowUp") {
+    const prevRow = tr.previousElementSibling;
+    if (prevRow && prevRow.rowIndex > 0) target = prevRow.cells[cellIndex];
+  } else if (e.key === "ArrowLeft") {
+    if (cellIndex > 0) target = tr.cells[cellIndex - 1];
+  } else if (e.key === "ArrowRight") {
+    if (cellIndex < tr.cells.length - 1) target = tr.cells[cellIndex + 1];
+  }
+
+  if (target && target.isContentEditable) {
+    e.preventDefault();
+    target.focus();
+  }
+});
+
+
+function addSafeOutLog() {
+  const source = document.getElementById("safeOutSource").value.trim();
+  const reason = document.getElementById("safeOutReason").value.trim();
+  const outAmountInput = document.getElementById("safeOutAmount");
+  const amount = parseInt(outAmountInput.value.replace(/[^\d]/g, "")) || 0;
+  if (!amount || amount <= 0 || !source || !reason) {
+    alert("يرجى إدخال المحاسب والسبب والمبلغ بشكل صحيح.");
+    return;
+  }
+
+  const safeInput = document.getElementById("safeAmount");
+  let safeAmount = parseInt(safeInput.value.replace(/[^\d]/g, "")) || 0;
+
+  if (amount > safeAmount) {
+    alert("❗ لا يوجد رصيد كافٍ في القاصة لإجراء هذه العملية.");
+    return;
+  }
+
+  safeAmount -= amount;
+  safeInput.value = safeAmount.toLocaleString();
+
+  const table = document.querySelector("#safeLogTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td contenteditable="true">${new Date().toLocaleString("ar-EG")}</td>
+    <td contenteditable="true">صادر</td>
+    <td contenteditable="true">${amount.toLocaleString()}</td>
+    <td contenteditable="true">${source}</td>
+    <td contenteditable="true">${reason}</td>
+  `;
+  table.insertBefore(row, table.firstChild);
+
+  outAmountInput.value = "";
+  document.getElementById("safeOutSource").value = "";
+  document.getElementById("safeOutReason").value = "";
+}
+
+
+function undoLastDeduction() {
+  const table = document.querySelector("#safeLogTable tbody");
+  const rows = Array.from(table.rows);
+  for (let row of rows) {
+    const type = row.cells[1]?.textContent?.trim();
+    if (type === "خصم" || type === "صادر") {
+      const amount = parseInt(row.cells[2]?.textContent.replace(/[^\d]/g, "") || "0");
+      let safeInput = document.getElementById("safeAmount");
+      let safeAmount = parseInt(safeInput.value.replace(/[^\d]/g, "")) || 0;
+      safeAmount += amount;
+      safeInput.value = safeAmount.toLocaleString();
+      row.remove();
+      alert("✅ تم التراجع عن آخر خصم وإعادة المبلغ إلى القاصة.");
+      return;
+    }
+  }
+  alert("❗ لا يوجد خصم يمكن التراجع عنه.");
+}
+
+
+function deleteRow(button) {
+  const row = button.closest("tr");
+  if (confirm("هل أنت متأكد أنك تريد حذف هذا السطر؟")) {
+    row.remove();
+    updateAuditPointsSum?.(); // في حال كان من سجل التدقيق
+  }
+}
+
+
+function cleanInvalidRows() {
+  const tables = ["logTable", "auditLogTable", "safeLogTable"];
+  tables.forEach(id => {
+    const table = document.getElementById(id);
+    if (!table) return;
+    const rows = Array.from(table.tBodies[0].rows);
+    rows.forEach(row => {
+      let invalid = false;
+      const cells = Array.from(row.cells);
+      for (let i = 0; i < cells.length - 1; i++) { // نتجاهل زر الحذف
+        const text = cells[i].textContent.trim();
+        if (text === "") {
+          invalid = true;
+          break;
+        }
+        // إذا الخلية للنقاط أو السعر، تأكد أنها رقمية
+        if (i === 3 || i === 4) {
+          const num = parseInt(text.replace(/[^\d]/g, ""));
+          if (isNaN(num)) {
+            invalid = true;
+            break;
+          }
+        }
+      }
+      if (invalid) row.remove();
+    });
+    updateAuditPointsSum?.();
+  });
+  alert("✅ تم تنظيف الصفوف غير الصالحة.");
+}
+
+</script>
+
+
+</body></html>
